@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block page_title %}Network Sensor Configuration{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 700px;">
+  <div class="card-header">
+    <div class="card-title"><span>⚙️</span> Sensor Parameters</div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.85rem;">
+    <div>
+      <label style="display: block; color: var(--text-muted); margin-bottom: 4px;">Sensor Web Host & Port</label>
+      <input type="text" class="input-text" value="0.0.0.0:9090" style="width: 100%; font-family: monospace;" readonly>
+    </div>
+    <div>
+      <label style="display: block; color: var(--text-muted); margin-bottom: 4px;">808.11 Deauth Burst Alert Threshold</label>
+      <input type="text" class="input-text" value="10 frames / 5 seconds" style="width: 100%;" readonly>
+    </div>
+    <div>
+      <label style="display: block; color: var(--text-muted); margin-bottom: 4px;">TCP SYN Flood Threshold</label>
+      <input type="text" class="input-text" value="50 unacknowledged SYNs / 5 seconds" style="width: 100%;" readonly>
+    </div>
+    <div>
+      <label style="display: block; color: var(--text-muted); margin-bottom: 4px;">ARP Spoof Detection Engine</label>
+      <input type="text" class="input-text" value="Active (IP-to-MAC Binding Conflict Monitor)" style="width: 100%;" readonly>
+    </div>
+  </div>
+</div>
+{% endblock %}

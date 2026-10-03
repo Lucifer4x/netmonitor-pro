@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block page_title %}Active Network Conversations & Flow Metrics{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <div class="card-title"><span>🔄</span> Active Flow Matrix</div>
+    <button class="btn btn-outline btn-sm" onclick="fetchFlows()">Refresh Flows</button>
+  </div>
+  <div class="table-responsive">
+    <table class="net-table">
+      <thead>
+        <tr>
+          <th>Conversation (Src ➔ Dst)</th>
+          <th>Protocol</th>
+          <th>Packets</th>
+          <th>Total Bytes</th>
+          <th>Duration</th>
+          <th>PPS</th>
+          <th>Bitrate</th>
+        </tr>
+      </thead>
+      <tbody id="flows-tbody">
+        <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No active network flows recorded.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function fetchFlows() {
+    const res = await fetch('/api/flows');
+    const data = await res.json();
+    const tbody = document.getElementById('flows-tbody');
+    const flows = data.flows || [];
+    if (!flows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No active network flows recorded.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = flows.map(f => `
+      <tr>
+        <td><strong style="color: var(--cyan-accent); font-family: monospace;">${f.conversation}</strong></td>
+        <td><span class="badge badge-${f.protocol.toLowerCase()}">${f.protocol}</span></td>
+        <td><code>${f.packet_count}</code></td>
+        <td>${f.formatted_bytes}</td>
+        <td>${f.duration}</td>
+        <td><code>${f.pps}</code></td>
+        <td><code>${f.bps} bps</code></td>
+      </tr>
+    `).join('');
+  }
+  fetchFlows();
+  setInterval(fetchFlows, 3000);
+</script>
+{% endblock %}

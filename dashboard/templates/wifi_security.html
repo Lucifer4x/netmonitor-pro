@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block page_title %}Wireless Security & 802.11 Deauth Audit{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+  <!-- Simulation Trigger -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span>🧪</span> Simulate Deauth Attack Burst</div>
+    </div>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">
+      Test the 802.11 Deauth Flood Detection engine by simulating an unauthenticated 802.11 Deauth burst sequence against a test BSSID.
+    </p>
+    <form id="deauth-sim-form" style="display: flex; gap: 10px;">
+      <input type="text" id="sim-bssid" class="input-text" value="00:11:22:33:44:55" style="width: 160px; font-family: monospace;" placeholder="BSSID">
+      <input type="text" id="sim-target" class="input-text" value="AA:BB:CC:DD:EE:FF" style="width: 160px; font-family: monospace;" placeholder="Target Client MAC">
+      <button type="submit" class="btn btn-primary btn-sm">🚨 Trigger Burst Attack</button>
+    </form>
+  </div>
+
+  <!-- 802.11w Protection Status -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span>🔐</span> 802.11w MFP Defense Status</div>
+    </div>
+    <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
+      <p style="margin-bottom: 8px;">
+        <strong style="color: var(--emerald-primary);">Why Deauth Attacks Work:</strong> Legacy 802.11 Wi-Fi management frames (Deauth/Disassoc) are unauthenticated and transmitted in plaintext, allowing spoofed sender addresses.
+      </p>
+      <p>
+        <strong style="color: var(--cyan-accent);">Protection Standard:</strong> Enabling <strong>802.11w Protected Management Frames (PMF / MFP)</strong> or upgrading to <strong>WPA3-SAE</strong> cryptographically signs management frames, mitigating deauthentication attacks.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Deauth Alerts Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title"><span>🚨</span> 802.11 Deauthentication Flood Alarms</div>
+    <button class="btn btn-outline btn-sm" onclick="fetchWifiData()">Refresh Alarms</button>
+  </div>
+  <div class="table-responsive">
+    <table class="net-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Target BSSID</th>
+          <th>Victim Client MAC</th>
+          <th>Frame Type</th>
+          <th>Burst Rate</th>
+          <th>Severity</th>
+          <th>Mitigation</th>
+        </tr>
+      </thead>
+      <tbody id="deauth-tbody">
+        <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No 802.11 deauth attacks detected.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function fetchWifiData() {
+    const res = await fetch('/api/wifi');
+    const data = await res.json();
+    const tbody = document.getElementById('deauth-tbody');
+    const alerts = data.alerts || [];
+    if (!alerts.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No 802.11 deauth attacks detected. Click "Trigger Burst Attack" above to test detection.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = alerts.map(a => `
+      <tr>
+        <td><code>${a.timestamp}</code></td>
+        <td><strong style="color: var(--cyan-accent); font-family: monospace;">${a.target_bssid}</strong></td>
+        <td><code style="color: var(--yellow-alert);">${a.target_client}</code></td>
+        <td><span class="badge badge-critical">${a.frame_type}</span></td>
+        <td><code>${a.rate_per_sec} pkts/s</code></td>
+        <td><span class="badge badge-critical">${a.severity}</span></td>
+        <td style="font-size: 0.8rem; color: var(--text-muted);">${a.mitigation}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('deauth-sim-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('bssid', document.getElementById('sim-bssid').value);
+    formData.append('client', document.getElementById('sim-target').value);
+    await fetch('/api/simulate-deauth', { method: 'POST', body: formData });
+    fetchWifiData();
+  };
+
+  fetchWifiData();
+  setInterval(fetchWifiData, 3000);
+</script>
+{% endblock %}

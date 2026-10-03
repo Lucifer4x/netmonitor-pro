@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block page_title %}Network Security Threats & Anomaly Log{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <div class="card-title"><span>🛡️</span> Detected Network Threats (ARP Spoofing, SYN Floods, Port Scans)</div>
+    <button class="btn btn-outline btn-sm" onclick="fetchThreats()">Refresh Log</button>
+  </div>
+  <div class="table-responsive">
+    <table class="net-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Severity</th>
+          <th>Threat Category</th>
+          <th>Source Host</th>
+          <th>Target Host</th>
+          <th>Description & Evidence</th>
+          <th>CWE</th>
+        </tr>
+      </thead>
+      <tbody id="threats-tbody">
+        <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No active network security threats detected.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function fetchThreats() {
+    const res = await fetch('/api/threats');
+    const data = await res.json();
+    const tbody = document.getElementById('threats-tbody');
+    const threats = data.threats || [];
+    if (!threats.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No network security threats detected.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = threats.map(t => `
+      <tr>
+        <td><code>${t.timestamp}</code></td>
+        <td><span class="badge badge-${t.severity.toLowerCase()}">${t.severity}</span></td>
+        <td><strong>${t.threat_type}</strong></td>
+        <td><code>${t.source_ip}</code></td>
+        <td><code>${t.target_ip}</code></td>
+        <td style="font-size: 0.82rem;">
+          <div>${t.description}</div>
+          <div style="color: var(--text-muted); margin-top: 4px; font-family: monospace;">${t.evidence}</div>
+        </td>
+        <td><code>${t.cwe}</code></td>
+      </tr>
+    `).join('');
+  }
+  fetchThreats();
+  setInterval(fetchThreats, 3000);
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NetMonitor Pro | Network & Wireless Security Sensor{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">📡</div>
+      <div>
+        <h2>NetMonitor Pro</h2>
+        <span>PACKET & WIRELESS SENSOR</span>
+      </div>
+    </div>
+    <ul class="nav-menu">
+      <li><a href="/" class="{% if request.path == '/' %}active{% endif %}">📊 Overview & Packets</a></li>
+      <li><a href="/flows" class="{% if request.path == '/flows' %}active{% endif %}">🔄 Conversations / Flows</a></li>
+      <li><a href="/wifi-security" class="{% if request.path == '/wifi-security' %}active{% endif %}">📶 Wi-Fi & Deauth Audit</a></li>
+      <li><a href="/threats" class="{% if request.path == '/threats' %}active{% endif %}">🚨 Security Threats</a></li>
+      <li><a href="/settings" class="{% if request.path == '/settings' %}active{% endif %}">⚙️ Sensor Settings</a></li>
+    </ul>
+  </aside>
+
+  <div class="main-content">
+    <header class="top-nav">
+      <h1 style="font-size: 1.25rem; font-weight: 600;">{% block page_title %}Dashboard{% endblock %}</h1>
+      <div>
+        <button class="btn btn-outline btn-sm" onclick="window.location.reload()">🔄 Refresh Telemetry</button>
+      </div>
+    </header>
+
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
